@@ -1,14 +1,19 @@
 from fastapi import FastAPI, Query, Path, Body, HTTPException
+from sqlalchemy import text
 from starlette import status
-
+from database import db_dependency
 from classes import HeroValidation, Hero
 from heroes import HEROES
 from utils import find_proper_hero_id
 
 app = FastAPI()
 @app.get("/")
-async def heartbeat():
-    return "app running"
+async def heartbeat(db: db_dependency):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"message": "DATABASE OK"}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 # GET ALL
