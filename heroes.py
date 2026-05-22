@@ -1,4 +1,5 @@
 from typing import List
+import csv
 from classes import Hero
 
 HEROES: List[Hero] = [
@@ -112,3 +113,41 @@ HEROES: List[Hero] = [
         rank=53
     )
 ]
+
+
+def format_array(py_list):
+    return '{' + ', '.join(f'"{item}"' for item in py_list) + '}'
+
+with open("heroes.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+
+    # HEADERS
+    writer.writerow([
+        "nick_name",
+        "full_name",
+        "occupation",
+        "powers",
+        "hobby",
+        "type",
+        "rank"
+    ])
+
+    # DATA
+    for hero in HEROES:
+        writer.writerow([
+            hero.nick_name,
+            hero.full_name,
+            format_array(hero.occupation),
+            format_array(hero.powers),
+            format_array(hero.hobby),
+            hero.type,
+            hero.rank
+        ])
+
+# PSQL COMMAND TO IMPORT THE CSV FILE (DONT USE PGADMIN, ITS CRAP) AND INSTRUCTIONS :
+
+# PRODUCE THE FILE WITH F5
+# PUT THE LOCAL FILE IN HOME DIRECTORY AND APPLY FULL ACCESS RIGHTS (ALSO TO TOP FOLDER IF NECESSARY)
+# ENTER PSQL WITH : sudo -u postgres psql.
+# LOG TO THE RIGHT DB
+# \copy public.heroes (nick_name, full_name, occupation, powers, hobby, type, rank) FROM '/your/directory/heroes.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF8' QUOTE '"' ESCAPE '''';
