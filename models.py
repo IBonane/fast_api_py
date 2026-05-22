@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
 
 from database import Base
@@ -13,3 +13,14 @@ class Heroes(Base):
     hobby = Column(ARRAY(String))
     type = Column(String)
     rank = Column(Integer)
+
+class Players(Base):
+    __tablename__ = "players"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    email = Column(String, unique=True)
+    username = Column(String, unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+    role = Column(String)
