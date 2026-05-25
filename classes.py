@@ -79,3 +79,7 @@ class PlayerValidation(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class ResetPasswordValidation(BaseModel):
+    old_password: str = Field(description="Old password")
+    new_password: str = Field(description="New password")
