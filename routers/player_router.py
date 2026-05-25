@@ -1,22 +1,15 @@
-from fastapi import HTTPException, APIRouter, Depends, Body
-from typing import Annotated
+from fastapi import HTTPException, APIRouter, Body
 from passlib.context import CryptContext
 from starlette import status
 from database import db_dependency
 from models import Players
-from routers.auth_router import get_current_player
+from routers.auth_router import player_dependency, bcrypt_context
 from classes import ResetPasswordValidation
 
 router = APIRouter(
     tags=["player"],
     prefix="/player"
 )
-
-# DEPENDENCIES
-player_dependency = Annotated[dict, Depends(get_current_player)]
-
-#BCRYPT CONFIG
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # FOR THE LOGGED AS PLAYER, GET HIS INFOS
 @router.get("/", status_code=status.HTTP_200_OK)

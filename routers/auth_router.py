@@ -8,6 +8,7 @@ from passlib.context import CryptContext
 from starlette.middleware import Middleware
 
 from classes import PlayerValidation, Token
+from config import settings
 from database import db_dependency
 import models
 from models import Players
@@ -25,10 +26,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/login")
 #BCRYPT CONFIG
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# JWT CONFIG
-# KEY GENERATED WITH COMMAND: openssl rand -hex 64
-JWT_SECRET_KEY = "70188626c959da57ff626b348e07933daf5c1a4f65c5de3ce8c992cd2a64b384f654d8102a6769dcd3c5f57a887b4331474bd41c3a68e92fba0cdcae0da8e1af"
-JWT_ALGO = "HS256"
+
 
 # HELPER FUNCTION FOR LOGIN
 def authenticate_player(username: str, password: str, db):
@@ -43,13 +41,13 @@ def create_token(username: str, user_id: int, role: str, expires_delta: timedelt
     encoded_data = {"sub": username, "id": user_id, "role": role}
     expiration = datetime.now(timezone.utc) + expires_delta
     encoded_data.update({ "exp": expiration.timestamp() })
-    return jwt.encode(encoded_data, JWT_SECRET_KEY, algorithm=JWT_ALGO)
+    return jwt.encode(encoded_data, settings.jwt_secret_key, algorithm=settings.jwt_algo)
 ##
 
 # FOR AUTH MIDDLEWARE
 async def get_current_player(token: Annotated[str, Depends(oauth2_bearer)]):
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGO])
+        payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algo])
         username: str = payload["sub"]
         user_id: int = payload["id"]
         player_role: str = payload["role"]
@@ -58,6 +56,10 @@ async def get_current_player(token: Annotated[str, Depends(oauth2_bearer)]):
         return {"username": username, "id": user_id, "role": player_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="wrong credentials")
+
+
+# DEPENDENCIES
+player_dependency = Annotated[dict, Depends(get_current_player)]
 ##
 
 

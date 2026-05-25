@@ -1,17 +1,13 @@
-from fastapi import HTTPException, APIRouter, Depends, Path
-from typing import Annotated
+from fastapi import HTTPException, APIRouter, Path
 from starlette import status
 from database import db_dependency
 from models import Heroes
-from  routers.auth_router import get_current_player
+from routers.auth_router import player_dependency
 
 router = APIRouter(
     tags=["admin"],
     prefix="/admin",
 )
-
-# DEPENDENCIES
-player_dependency = Annotated[dict, Depends(get_current_player)]
 
 # GET ALL (FOR THE LOGGED AS ADMIN)
 @router.get("/heroes", status_code=status.HTTP_200_OK)

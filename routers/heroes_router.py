@@ -1,23 +1,16 @@
-from fastapi import Query, Path, Body, HTTPException, APIRouter, Depends
+from fastapi import Query, Path, Body, HTTPException, APIRouter
 from sqlalchemy import text
-from typing import Annotated
 from starlette import status
 from database import db_dependency, engine
 from classes import HeroValidation
 import models
 from models import Heroes
-from  routers.auth_router import get_current_player
+from routers.auth_router import player_dependency
 
 router = APIRouter(
     tags=["heroes"],
     prefix="/heroes",
 )
-
-# DEPENDENCIES
-player_dependency = Annotated[dict, Depends(get_current_player)]
-
-
-models.Base.metadata.create_all(bind=engine)
 
 @router.get("/heartbeat", status_code=status.HTTP_200_OK)
 async def heartbeat(db: db_dependency):
