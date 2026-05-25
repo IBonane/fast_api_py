@@ -39,8 +39,8 @@ def authenticate_player(username: str, password: str, db):
         return False
     return found_player
 
-def create_token(username: str, user_id: int, expires_delta: timedelta):
-    encoded_data = {"sub": username, "id": user_id}
+def create_token(username: str, user_id: int, role: str, expires_delta: timedelta):
+    encoded_data = {"sub": username, "id": user_id, "role": role}
     expiration = datetime.now(timezone.utc) + expires_delta
     encoded_data.update({ "exp": expiration.timestamp() })
     return jwt.encode(encoded_data, JWT_SECRET_KEY, algorithm=JWT_ALGO)
@@ -52,9 +52,10 @@ async def get_current_player(token: Annotated[str, Depends(oauth2_bearer)]):
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGO])
         username: str = payload["sub"]
         user_id: int = payload["id"]
+        player_role: str = payload["role"]
         if  not username or not user_id:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong credentials")
-        return {"username": username, "id": user_id}
+        return {"username": username, "id": user_id, "role": player_role}
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="wrong credentials")
 ##
@@ -79,5 +80,10 @@ async def  login_player(form_data: Annotated[OAuth2PasswordRequestForm, Depends(
     player_authenticated = authenticate_player(form_data.username, form_data.password, db)
     if not player_authenticated:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong credentials")
-    token = create_token(player_authenticated.username, player_authenticated.id, timedelta(minutes=30))
+    token = create_token(player_authenticated.username, player_authenticated.id, player_authenticated.role, timedelta(minutes=30))
     return {"access_token": token, "token_type": "bearer"}
+
+# TO INSERT IN THE PLAYERS TABLE THE ADMIN BY HAND WITH SQL COMMAND, U NEED TO HASH TO PASSWORD U USE FIRST :
+# print(bcrypt_context.hash("superadmin"))
+# SO USE THIS LINE THEN, GRAB THE HASHED PASS ANT PUT IT IN THE PLAYERS TABLE BY HAND WITH COMMAND :
+# INSERT INTO players (email, username, first_name, last_name, hashed_password, is_active, role) VALUES ('admin@gmail.com', 'admin', 'admin', 'admin', 'admin', true, 'admin')
